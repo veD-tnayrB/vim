@@ -7,10 +7,10 @@
 ========         .----------------------.   | === |          ========
 ========         |.-""""""""""""""""""-.|   |-----|          ========
 ========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
+========         ||                    ||   |-----|          ========
 ========         ||                    ||   | === |          ========
 ========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
+========         ||                    ||   |:::::|          ========
 ========         |'-..................-'|   |____o|          ========
 ========         `"")----------------(""`   ___________      ========
 ========        /::::::::::|  |::::::::::\  \ no mouse \     ========
@@ -19,70 +19,6 @@
 ========                                                     ========
 =====================================================================
 =====================================================================
-vim_strsave_escape_ks
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-   j   After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -91,13 +27,14 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.opt.tabstop = 2
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
-
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
 -- Make line numbers default
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
@@ -166,6 +103,9 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+-- Save with <C-s>
+vim.keymap.set('n', '<C-s>', '<cmd>w<CR>', { desc = 'Save with <C-s>' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -243,6 +183,79 @@ require('lazy').setup({
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
+  -- Prettier
+  {
+    'jose-elias-alvarez/null-ls.nvim',
+    opts = {},
+    config = function()
+      local null_ls = require 'null-ls'
+
+      local group = vim.api.nvim_create_augroup('lsp_format_on_save', { clear = false })
+      local event = 'BufWritePre' -- or "BufWritePost"
+      local async = event == 'BufWritePost'
+
+      null_ls.setup {
+        on_attach = function(client, bufnr)
+          if client.supports_method 'textDocument/formatting' then
+            vim.keymap.set('n', '<Leader>f', function()
+              vim.lsp.buf.format { bufnr = vim.api.nvim_get_current_buf() }
+            end, { buffer = bufnr, desc = '[lsp] format' })
+
+            -- format on save
+            vim.api.nvim_clear_autocmds { buffer = bufnr, group = group }
+            vim.api.nvim_create_autocmd(event, {
+              buffer = bufnr,
+              group = group,
+              callback = function()
+                vim.lsp.buf.format { bufnr = bufnr, async = async }
+              end,
+              desc = '[lsp] format on save',
+            })
+          end
+
+          if client.supports_method 'textDocument/rangeFormatting' then
+            vim.keymap.set('x', '<Leader>f', function()
+              vim.lsp.buf.format { bufnr = vim.api.nvim_get_current_buf() }
+            end, { buffer = bufnr, desc = '[lsp] format' })
+          end
+        end,
+      }
+    end,
+  },
+  {
+    'MunifTanjim/prettier.nvim',
+    opts = {},
+    config = function()
+      require('prettier').setup {
+        cli_options = {
+          jsx_single_quote = false,
+          semi = true,
+          single_quote = true,
+          arrow_parens = 'always',
+        },
+        bin = 'prettier',
+        filetypes = {
+          'css',
+          'graphql',
+          'html',
+          'javascript',
+          'javascriptreact',
+          'json',
+          'less',
+          'markdown',
+          'scss',
+          'typescript',
+          'typescriptreact',
+          'yaml',
+        },
+      }
+    end,
+  },
+
+  { 'neovim/nvim-lspconfig', opts = {} },
+
+  -- "gc" to comment visual regions/lines
+  { 'JoosepAlviste/nvim-ts-context-commentstring', opts = {} },
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -308,6 +321,7 @@ require('lazy').setup({
       vim.g.NERDTreeMinimalUI = 1 -- Minimal UI (no toolbar)
       vim.g.NERDTreeAutoDeleteBuffer = 1 -- Automatically close NERDTree when the last buffer is closed
       vim.api.nvim_set_keymap('n', '<C-Right>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
+      vim.api.nvim_set_keymap('n', '<A-f>', ':NERDTreeFind<CR>', { noremap = true, silent = false })
     end,
   },
 
@@ -384,6 +398,11 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
 
+      require('telescope').setup {
+        defaults = {
+          file_ignore_patterns = { 'node_modules' },
+        },
+      }
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
@@ -813,12 +832,14 @@ require('lazy').setup({
       vim.cmd.hi 'Comment gui=none'
     end,
   },
+  -- barbar
+  {
+    'nvim-tree/nvim-web-devicons',
+    opts = {},
+  },
   {
     'romgrk/barbar.nvim',
-    dependencies = {
-      'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
-      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
-    },
+    dependencies = {},
     init = function()
       vim.g.barbar_auto_setup = false
       -- Assuming you have already set up your `opts` table
