@@ -104,8 +104,8 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
--- Save with <C-s>
-vim.keymap.set('n', '<C-s>', '<cmd>w<CR>', { desc = 'Save with <C-s>' })
+-- Save and format with <C-s>
+vim.keymap.set('n', '<C-s>', ':Prettier<CR> :w<CR>', { desc = 'Save, format, and save again with <C-s>' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -232,6 +232,10 @@ require('lazy').setup({
           semi = true,
           single_quote = true,
           arrow_parens = 'always',
+          print_width = 80,
+          use_tabs = true,
+          bracket_spacing = true,
+          jsx_bracket_same_line = false,
         },
         bin = 'prettier',
         filetypes = {
@@ -665,43 +669,6 @@ require('lazy').setup({
       local lspconfig = require 'lspconfig'
       lspconfig.tsserver.setup {}
     end,
-  },
-
-  { -- Autoformat
-    'stevearc/conform.nvim',
-    lazy = false,
-    keys = {
-      {
-        '<leader>f',
-        function()
-          require('conform').format { async = true, lsp_fallback = true }
-        end,
-        mode = '',
-        desc = '[F]ormat buffer',
-      },
-    },
-    opts = {
-      notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        return {
-          timeout_ms = 500,
-          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
-        }
-      end,
-      formatters_by_ft = {
-        lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use a sub-list to tell conform to run *until* a formatter
-        -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
-      },
-    },
   },
 
   { -- Autocompletion
