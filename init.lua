@@ -19,65 +19,32 @@
 ========                                                     ========
 =====================================================================
 =====================================================================
-
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+]]--
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.opt.tabstop = 2
--- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
-
--- [[ Setting options ]]
--- See `:help vim.opt`
--- NOTE: You can change these options as you wish!
---  For more options, you can see `:help option-list`
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
--- Make line numbers default
 vim.opt.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
-
--- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
-
--- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
--- Sync clipboard between OS and Neovim.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.opt.clipboard = 'unnamedplus'
 
--- Enable break indent
+
 vim.opt.breakindent = true
-
--- Save undo history
 vim.opt.undofile = true
-
--- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
-
--- Keep signcolumn on by default
 vim.opt.signcolumn = 'yes'
-
--- Decrease update time
 vim.opt.updatetime = 250
-
--- Decrease mapped sequence wait time
--- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
-
--- Configure how new splits should be opened
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
+--
 --  and `:help 'listchars'`
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
@@ -90,12 +57,14 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
-
+vim.wo.relativenumber = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
+
+-- Key binds
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
@@ -105,7 +74,11 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagn
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Save and format with <C-s>
-vim.keymap.set('n', '<C-s>', ':Prettier<CR> :w<CR>', { desc = 'Save, format, and save again with <C-s>' })
+vim.keymap.set('n', '<C-s>', ':Prettier<CR>:w<CR> :w<CR>', { desc = 'Save, format, and save again with <C-s>' })
+
+-- Toggle NvimTree
+vim.keymap.set('n', '<C-right>', ':NvimTreeToggle<Return>', { desc = 'Toggle [T]ree' })
+vim.keymap.set('n', '<M-f>', ':NvimTreeFindFile<Return>', { desc = 'Find [F]ile' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -123,19 +96,27 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
---
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
+-- Movement
+
+-- Vertical movement
+vim.keymap.set('n', '<C-d>', '<C-d>zz' )
+vim.keymap.set('n', '<C-b>', '<C-u>zz' )
+vim.keymap.set('n', 'n', 'nzzv' )
+vim.keymap.set('n', 'N', 'Nzzv' )
+
+-- COPY VALUES:
+-- Sync clipboard between OS and Neovim.
+--  Remove this option if you want your OS clipboard to remain independent.
+vim.opt.clipboard = 'unnamedplus'
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
@@ -144,6 +125,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Plugins
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -153,20 +135,16 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
--- Configure the NERDTree toggle
-vim.api.nvim_set_keymap('n', '<C-Right>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
+
+
 
 -- [[ Configure and install plugins ]]
---
 --  To check the current status of your plugins, run
 --    :Lazy
---
 --  You can press `?` in this menu for help. Use `:q` to close the window
---
 --  To update plugins you can run
 --    :Lazy update
 --
--- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
@@ -182,6 +160,117 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+
+  -- Nvim tree
+  {
+		"nvim-tree/nvim-tree.lua",
+		config = function()
+			require("nvim-tree").setup({
+				on_attach = function(bufnr)
+					local api = require("nvim-tree.api")
+
+					local function opts(desc)
+						return {
+							desc = "nvim-tree: " .. desc,
+							buffer = bufnr,
+							noremap = true,
+							silent = true,
+							nowait = true,
+						}
+					end
+
+					-- default mappings
+					api.config.mappings.default_on_attach(bufnr)
+
+					-- custom mappings
+					vim.keymap.set("n", "t", api.node.open.tab, opts("Tab"))
+				end,
+				actions = {
+					open_file = {
+						quit_on_open = true,
+					},
+				},
+        update_focused_file = {
+                enable = true,
+                update_root = true,
+
+               },
+				sort = {
+					sorter = "case_sensitive",
+				},
+				view = {
+					width = 25,
+					relativenumber = true,
+				},
+				renderer = {
+					group_empty = true,
+				},
+				filters = {
+					custom = {
+						"node_modules/.*",
+					},
+				},
+				log = {
+					enable = true,
+					truncate = true,
+					types = {
+						diagnostics = true,
+						git = true,
+						profile = true,
+						watcher = true,
+					},
+				},
+			})
+
+			if vim.fn.argc(-1) == 0 then
+				vim.cmd("NvimTreeFocus")
+			end
+		end,
+	},
+
+
+ 	-- Incremental rename
+	{
+		"smjonas/inc-rename.nvim",
+		cmd = "IncRename",
+		keys = {
+			{
+				"<C-r>",
+				function()
+					return ":IncRename " .. vim.fn.expand("<cword>")
+				end,
+				desc = "Incremental rename",
+				mode = "n",
+				noremap = true,
+				expr = true,
+			},
+		},
+		config = true,
+	},
+
+   -- Dashboard
+  {
+  'nvimdev/dashboard-nvim',
+  event = 'VimEnter',
+  config = function()
+    require('dashboard').setup {
+      -- config
+    }
+  end,
+  dependencies = { {'nvim-tree/nvim-web-devicons'}}
+  },
+
+
+ {  
+
+    "ellisonleao/gruvbox.nvim", 
+    priority = 1000 , 
+    config = true, 
+    init = function()
+vim.o.background = "dark" -- or "light" for light mode
+vim.cmd([[colorscheme gruvbox]])
+    end
+  },
 
   -- Prettier
   {
@@ -222,6 +311,7 @@ require('lazy').setup({
       }
     end,
   },
+   -- Prettier config
   {
     'MunifTanjim/prettier.nvim',
     opts = {},
@@ -232,10 +322,12 @@ require('lazy').setup({
           semi = true,
           single_quote = true,
           arrow_parens = 'always',
-          print_width = 80,
+          print_width = 120,
           use_tabs = true,
           bracket_spacing = true,
           jsx_bracket_same_line = false,
+          tab_width = 4,
+          prose_wrap = 'always',
         },
         bin = 'prettier',
         filetypes = {
@@ -256,10 +348,12 @@ require('lazy').setup({
     end,
   },
 
+  -- LSP Configuration & Plugins
   { 'neovim/nvim-lspconfig', opts = {} },
 
   -- "gc" to comment visual regions/lines
   { 'JoosepAlviste/nvim-ts-context-commentstring', opts = {} },
+
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -316,18 +410,7 @@ require('lazy').setup({
     end,
   },
 
-  -- NERDTree (file tree sidebar)
-  {
-    'preservim/nerdtree',
-    cmd = 'NERDTreeToggle', -- Optional: Add a command to toggle NERDTree
-    config = function()
-      vim.g.NERDTreeShowHidden = 1 -- Show hidden files
-      vim.g.NERDTreeMinimalUI = 1 -- Minimal UI (no toolbar)
-      vim.g.NERDTreeAutoDeleteBuffer = 1 -- Automatically close NERDTree when the last buffer is closed
-      vim.api.nvim_set_keymap('n', '<C-Right>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
-      vim.api.nvim_set_keymap('n', '<A-f>', ':NERDTreeFind<CR>', { noremap = true, silent = false })
-    end,
-  },
+
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -641,6 +724,7 @@ require('lazy').setup({
       --
       --  You can press `g?` for help in this menu.
       require('mason').setup()
+    
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -738,7 +822,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -793,7 +877,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'kanagawa-dragon'
+
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -804,40 +888,41 @@ require('lazy').setup({
     'nvim-tree/nvim-web-devicons',
     opts = {},
   },
-  {
-    'romgrk/barbar.nvim',
-    dependencies = {},
-    init = function()
-      vim.g.barbar_auto_setup = false
-      -- Assuming you have already set up your `opts` table
-      local opts = { noremap = true, silent = false }
 
+  -- Tabs 
+   {
+     'romgrk/barbar.nvim',
+     dependencies = {},
+     init = function()
+       vim.g.barbar_auto_setup = false
+       -- Assuming you have already set up your `opts` table
+       local opts = { noremap = true, silent = false }
       -- Define your mappings
-      vim.api.nvim_set_keymap('n', '<A-c>', '<Cmd>BufferClose<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-1>', '<Cmd>BufferGoto 1<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-2>', '<Cmd>BufferGoto 2<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-3>', '<Cmd>BufferGoto 3<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-4>', '<Cmd>BufferGoto 4<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-5>', '<Cmd>BufferGoto 5<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-6>', '<Cmd>BufferGoto 6<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-7>', '<Cmd>BufferGoto 7<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-8>', '<Cmd>BufferGoto 8<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-9>', '<Cmd>BufferGoto 9<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-0>', '<Cmd>BufferLast<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-,>', ':BufferPrevious<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-.>', ':BufferNext<CR>', opts)
-      vim.api.nvim_set_keymap('n', '<A-t>', ':tabnew#<CR>', opts)
-    end,
-    opts = {
-      noremap = true,
-      silent = true,
-      -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-      -- animation = true,
-      -- insert_at_start = true,
-      -- …etc.
-    },
-    version = '^1.0.0', -- optional: only update when a new 1.x version is released
-  },
+       vim.api.nvim_set_keymap('n', '<A-c>', '<Cmd>BufferClose<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-1>', '<Cmd>BufferGoto 1<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-2>', '<Cmd>BufferGoto 2<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-3>', '<Cmd>BufferGoto 3<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-4>', '<Cmd>BufferGoto 4<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-5>', '<Cmd>BufferGoto 5<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-6>', '<Cmd>BufferGoto 6<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-7>', '<Cmd>BufferGoto 7<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-8>', '<Cmd>BufferGoto 8<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-9>', '<Cmd>BufferGoto 9<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-0>', '<Cmd>BufferLast<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-,>', ':BufferPrevious<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-.>', ':BufferNext<CR>', opts)
+       vim.api.nvim_set_keymap('n', '<A-t>', ':tabnew#', opts)
+     end,
+     opts = {
+       noremap = true,
+       silent = true,
+       -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
+       -- animation = true,
+        insert_at_start = false,
+       -- …etc.
+     },
+     version = '^1.0.0', -- optional: only update when a new 1.x version is released
+   },
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -882,8 +967,25 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
+      ensure_installed = {
+        'bash',
+        'c',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'vim',
+        'vimdoc',
+        "javascript",
+				"typescript",
+				"css",
+				"gitignore",
+				"graphql",
+        "json",
+				"scss",
+				"sql",
+
+      },
       auto_install = true,
       highlight = {
         enable = true,
@@ -896,7 +998,6 @@ require('lazy').setup({
     },
     config = function(_, opts)
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
       -- Prefer git instead of curl in order to improve connectivity in some environments
       require('nvim-treesitter.install').prefer_git = true
       ---@diagnostic disable-next-line: missing-fields
