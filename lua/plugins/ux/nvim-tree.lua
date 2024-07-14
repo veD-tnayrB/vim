@@ -40,7 +40,7 @@
             relativenumber = true,
           },
           renderer = {
-            group_empty = true,
+            group_empty = false,
           },
           filters = {
             custom = {

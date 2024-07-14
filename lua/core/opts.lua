@@ -40,8 +40,6 @@ vim.wo.relativenumber = true
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 
-
-
 -- COPY VALUES:
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.

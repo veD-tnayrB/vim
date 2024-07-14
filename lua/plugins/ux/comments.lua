@@ -1,1 +1,6 @@
-return { 'JoosepAlviste/nvim-ts-context-commentstring', opts = {} }
+return {  
+				'numToStr/Comment.nvim',
+				opts = {
+								-- add any options here
+				}
+}
